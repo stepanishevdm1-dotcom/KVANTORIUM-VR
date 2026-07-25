@@ -539,7 +539,6 @@ let mainTexPromise = loadTexture(scenes.main_entrance.variants[0].image).then(te
    ============================================================ */
 const preloadList = document.getElementById('preload-list');
 const bgProgress = document.getElementById('bg-progress');
-const bgProgressList = document.getElementById('bg-progress-list');
 const loadingStatus = document.getElementById('loading-status');
 const loadingEl = document.getElementById('loading');
 const loadingHint = document.getElementById('loading-hint');
@@ -594,27 +593,19 @@ function preloadAll() {
       if (img.file === mainFile) { loadedFiles++; continue; }
       const fileSize = sizes[i];
 
-      function createItem() {
-        const el = document.createElement('div');
-        el.className = 'preload-item' + (img.variant ? ' variant' : '');
-        const ns = document.createElement('span');
-        ns.className = 'name';
-        ns.textContent = img.label + (img.variant ? ' (' + img.variant + ')' : '');
-        const ps = document.createElement('span');
-        ps.className = 'progress';
-        ps.textContent = '0B/' + humanSize(fileSize) + ' 0%';
-        el.appendChild(ns);
-        el.appendChild(ps);
-        return el;
-      }
-      const item = createItem();
+      const item = document.createElement('div');
+      item.className = 'preload-item' + (img.variant ? ' variant' : '');
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'name';
+      nameSpan.textContent = img.label + (img.variant ? ' (' + img.variant + ')' : '');
+      const progSpan = document.createElement('span');
+      progSpan.className = 'progress';
+      progSpan.textContent = '0B/' + humanSize(fileSize) + ' 0%';
+      item.appendChild(nameSpan);
+      item.appendChild(progSpan);
       preloadList.appendChild(item);
-      const bgItem = createItem();
-      bgProgressList.appendChild(bgItem);
-      const progSpans = [item.querySelector('.progress'), bgItem.querySelector('.progress')];
 
       const url = encodeURI(img.file);
-      const cacheKey = img.file;
 
       (async () => {
         try {
@@ -627,15 +618,13 @@ function preloadAll() {
             if (done) break;
             recv += value.length;
             const filePct = fileSize ? Math.round((recv / fileSize) * 100) : 0;
-            const txt = humanSize(recv) + '/' + humanSize(fileSize) + ' ' + filePct + '%';
-            for (const ps of progSpans) ps.textContent = txt;
+            progSpan.textContent = humanSize(recv) + '/' + humanSize(fileSize) + ' ' + filePct + '%';
             loadedBytes += value.length;
             loadingStatus.textContent = t('loading') + humanSize(loadedBytes) + '/' + humanSize(totalBytes) + ' ' + (totalBytes ? Math.round((loadedBytes / totalBytes) * 100) : 0) + '%';
           }
 
           loadedFiles++;
-          const doneTxt = humanSize(fileSize) + '/' + humanSize(fileSize) + ' 100%';
-          for (const ps of progSpans) ps.textContent = doneTxt;
+          progSpan.textContent = humanSize(fileSize) + '/' + humanSize(fileSize) + ' 100%';
 
           if (loadedFiles === total) {
             loadingStatus.textContent = t('loading') + humanSize(totalBytes) + '/' + humanSize(totalBytes) + ' 100%';
@@ -647,7 +636,7 @@ function preloadAll() {
           }
         } catch (e) {
           loadedFiles++;
-          for (const ps of progSpans) ps.textContent = t('error');
+          progSpan.textContent = t('error');
           if (loadedFiles === total) {
             bgProgress.classList.add('hidden');
             setTimeout(() => {
@@ -666,6 +655,7 @@ let viewerStarted = false;
 bgLoadBtn.addEventListener('click', () => {
   bgLoadBtn.remove();
   loadingEl.classList.add('hidden');
+  bgProgress.appendChild(preloadList);
   bgProgress.classList.remove('hidden');
   startViewer();
 });
