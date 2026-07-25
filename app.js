@@ -1618,4 +1618,31 @@ setTimeout(() => {
 
 setInterval(() => { if (isTransitioning) isTransitioning = false; }, 10000);
 
+/* ============================================================
+   INTRO ANIMATION
+   ============================================================ */
+const introEl = document.getElementById('intro');
+const introLetters = document.querySelectorAll('#intro-letters span');
+const introSub = document.getElementById('intro-sub');
+const introShapes = document.querySelectorAll('.shape');
+
+requestAnimationFrame(() => {
+  introEl.classList.add('show');
+  introLetters.forEach((span, i) => {
+    setTimeout(() => span.classList.add('in'), i * 120);
+  });
+  setTimeout(() => introSub.classList.add('in'), 2000);
+  introShapes.forEach((s, i) => {
+    setTimeout(() => s.classList.add('show'), 1400 + i * 100);
+  });
+});
+
+setTimeout(() => {
+  introEl.classList.add('fade-out');
+  setTimeout(() => {
+    introEl.classList.remove('show', 'fade-out');
+    introEl.style.display = 'none';
+  }, 800);
+}, 4200);
+
 window.__debug = { scenes, yaw, pitch, fov };
