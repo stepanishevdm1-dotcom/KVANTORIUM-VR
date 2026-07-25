@@ -340,7 +340,11 @@ const SETTINGS_DEFAULTS = {
   mouseSensitivity: 1,
   animations: true,
   transitionSpeed: 2500,
-  language: 'ru'
+  language: 'ru',
+  brightness: 0,
+  saturation: 1,
+  contrast: 1,
+  sharpness: 0
 };
 
 const translations = {
@@ -521,7 +525,62 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.prepend(renderer.domElement);
 
 const sphereGeo = new THREE.SphereGeometry(SPHERE_RADIUS, 64, 64);
-const sphereMat = new THREE.MeshBasicMaterial({ side: THREE.BackSide });
+
+let adjustmentUniforms = null;
+
+function createFilterMaterial(texture) {
+  const uniforms = {
+    tDiffuse: { value: texture || null },
+    brightness: { value: settings.brightness },
+    saturation: { value: settings.saturation },
+    contrast: { value: settings.contrast },
+    sharpness: { value: settings.sharpness }
+  };
+  adjustmentUniforms = uniforms;
+  return new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: `
+      varying vec2 vUv;
+      void main() {
+        vUv = vec2(1.0 - uv.x, uv.y);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D tDiffuse;
+      uniform float brightness;
+      uniform float saturation;
+      uniform float contrast;
+      uniform float sharpness;
+      varying vec2 vUv;
+      void main() {
+        vec4 texel = texture2D(tDiffuse, vUv);
+        vec3 col = texel.rgb;
+        col += brightness;
+        col = (col - 0.5) * contrast + 0.5;
+        float gray = dot(col, vec3(0.299, 0.587, 0.114));
+        col = mix(vec3(gray), col, saturation);
+        if (sharpness > 0.0) {
+          vec2 ts = 1.0 / vec2(textureSize(tDiffuse, 0));
+          vec3 s = col * 5.0;
+          s -= texture2D(tDiffuse, vUv + vec2(-ts.x, -ts.y)).rgb;
+          s -= texture2D(tDiffuse, vUv + vec2(0.0, -ts.y)).rgb;
+          s -= texture2D(tDiffuse, vUv + vec2(ts.x, -ts.y)).rgb;
+          s -= texture2D(tDiffuse, vUv + vec2(-ts.x, 0.0)).rgb;
+          s -= texture2D(tDiffuse, vUv + vec2(ts.x, 0.0)).rgb;
+          s -= texture2D(tDiffuse, vUv + vec2(-ts.x, ts.y)).rgb;
+          s -= texture2D(tDiffuse, vUv + vec2(0.0, ts.y)).rgb;
+          s -= texture2D(tDiffuse, vUv + vec2(ts.x, ts.y)).rgb;
+          col = mix(col, s, sharpness);
+        }
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `,
+    side: THREE.BackSide
+  });
+}
+
+const sphereMat = createFilterMaterial(null);
 const sphere = new THREE.Mesh(sphereGeo, sphereMat);
 scene.add(sphere);
 
@@ -530,8 +589,12 @@ const hotspotVec = new THREE.Vector3(0, 0, -1);
 
 // Фон для экрана загрузки — Главный вход грузится сразу
 let mainTexPromise = loadTexture(scenes.main_entrance.variants[0].image).then(tex => {
-  sphere.material.map = tex;
-  sphere.material.needsUpdate = true;
+  if (sphere.material.uniforms) {
+    sphere.material.uniforms.tDiffuse.value = tex;
+  } else {
+    sphere.material.map = tex;
+    sphere.material.needsUpdate = true;
+  }
 });
 
 /* ============================================================
@@ -696,8 +759,12 @@ async function setScene(id, variantIdx, preserveRotation = false) {
 
   try {
     const tex = await loadTexture(imgUrl);
-    sphere.material.map = tex;
-    sphere.material.needsUpdate = true;
+    if (sphere.material.uniforms) {
+      sphere.material.uniforms.tDiffuse.value = tex;
+    } else {
+      sphere.material.map = tex;
+      sphere.material.needsUpdate = true;
+    }
     currentSceneId = id;
     currentVariantIdx = variantIdx;
     updateUI();
@@ -1008,7 +1075,13 @@ async function doCrossfadeTransition(targetId, returnYaw, returnPitch) {
   try {
     const tex = await loadTexture(imgUrl);
 
-    const mat2 = new THREE.MeshBasicMaterial({ side: THREE.BackSide, map: tex, transparent: true, opacity: 0 });
+    const mat2 = createFilterMaterial(tex);
+    mat2.transparent = true;
+    mat2.opacity = 0;
+    mat2.uniforms.brightness.value = settings.brightness;
+    mat2.uniforms.saturation.value = settings.saturation;
+    mat2.uniforms.contrast.value = settings.contrast;
+    mat2.uniforms.sharpness.value = settings.sharpness;
     const sphere2 = new THREE.Mesh(sphereGeo, mat2);
     scene.add(sphere2);
 
@@ -1064,7 +1137,13 @@ async function navigateTo(id, variantIdx) {
   try {
     const tex = await loadTexture(imgUrl);
 
-    const mat2 = new THREE.MeshBasicMaterial({ side: THREE.BackSide, map: tex, transparent: true, opacity: 0 });
+    const mat2 = createFilterMaterial(tex);
+    mat2.transparent = true;
+    mat2.opacity = 0;
+    mat2.uniforms.brightness.value = settings.brightness;
+    mat2.uniforms.saturation.value = settings.saturation;
+    mat2.uniforms.contrast.value = settings.contrast;
+    mat2.uniforms.sharpness.value = settings.sharpness;
     const sphere2 = new THREE.Mesh(sphereGeo, mat2);
     scene.add(sphere2);
 
@@ -1144,8 +1223,12 @@ function switchVariant(idx) {
   currentVariantIdx = idx;
   const imgUrl = s.variants[idx].image;
   loadTexture(imgUrl).then(tex => {
-    sphere.material.map = tex;
-    sphere.material.needsUpdate = true;
+    if (sphere.material.uniforms) {
+      sphere.material.uniforms.tDiffuse.value = tex;
+    } else {
+      sphere.material.map = tex;
+      sphere.material.needsUpdate = true;
+    }
     updateUI();
   });
 }
@@ -1222,6 +1305,14 @@ function rebuildHotspots() {
 
 function applySettings() {
   rebuildHotspots();
+}
+
+function applyImageAdjustments() {
+  if (!adjustmentUniforms) return;
+  adjustmentUniforms.brightness.value = settings.brightness;
+  adjustmentUniforms.saturation.value = settings.saturation;
+  adjustmentUniforms.contrast.value = settings.contrast;
+  adjustmentUniforms.sharpness.value = settings.sharpness;
 }
 
 function rebuildLanguageUI() {
@@ -1398,7 +1489,99 @@ function buildSettingsPanel() {
     });
   });
 
-  // 9. Language selector
+  // 9. Brightness
+  addGroup('Яркость', (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = -50;
+    input.max = 50;
+    input.value = Math.round(settings.brightness * 100);
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = Math.round(settings.brightness * 100) + '%';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.brightness = parseInt(input.value) / 100;
+      val.textContent = input.value + '%';
+      saveSettings();
+      applyImageAdjustments();
+    });
+  });
+
+  // 10. Contrast
+  addGroup('Контраст', (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 200;
+    input.value = Math.round(settings.contrast * 100);
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = Math.round(settings.contrast * 100) + '%';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.contrast = parseInt(input.value) / 100;
+      val.textContent = input.value + '%';
+      saveSettings();
+      applyImageAdjustments();
+    });
+  });
+
+  // 11. Saturation
+  addGroup('Насыщенность', (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 200;
+    input.value = Math.round(settings.saturation * 100);
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = Math.round(settings.saturation * 100) + '%';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.saturation = parseInt(input.value) / 100;
+      val.textContent = input.value + '%';
+      saveSettings();
+      applyImageAdjustments();
+    });
+  });
+
+  // 12. Sharpness
+  addGroup('Резкость', (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 200;
+    input.value = Math.round(settings.sharpness * 100);
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = Math.round(settings.sharpness * 100) + '%';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.sharpness = parseInt(input.value) / 100;
+      val.textContent = input.value + '%';
+      saveSettings();
+      applyImageAdjustments();
+    });
+  });
+
+  // 13. Language selector
   addGroup(t('language'), (g) => {
     const div = document.createElement('div');
     div.className = 'setting-style-options';
