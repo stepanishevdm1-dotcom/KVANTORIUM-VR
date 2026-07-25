@@ -1423,8 +1423,10 @@ function applySettings() {
 }
 
 function applyGlassBlur() {
-  const val = settings.glassBlur || 16;
-  document.documentElement.style.setProperty('--glass-blur', val + 'px');
+  let val = settings.glassBlur;
+  if (val === undefined || val === null) val = 16;
+  document.documentElement.classList.toggle('no-glass-blur', val === 0);
+  document.documentElement.style.setProperty('--glass-blur', (val || 0) + 'px');
 }
 
 function applyImageAdjustments() {

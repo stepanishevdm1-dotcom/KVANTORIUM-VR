@@ -8,6 +8,15 @@
   --glass-blur: 16px;
 }
 
+html.no-glass-blur .glass,
+html.no-glass-blur #sidebar,
+html.no-glass-blur #variants button,
+html.no-glass-blur #sidebar-btn,
+html.no-glass-blur #scene-name {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
 html, body {
   width: 100%;
   height: 100%;
@@ -34,37 +43,6 @@ canvas:active {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid rgba(255,255,255,0.12);
-}
-
-/* ===== Liquid Glass Border ===== */
-.liquid-glass,
-#variants button,
-#sidebar-btn,
-.setting-style-btn,
-#bg-load-btn,
-.sidebar-item {
-  position: relative;
-  z-index: 0;
-}
-
-.liquid-glass::before,
-#variants button::before,
-#sidebar-btn::before,
-.setting-style-btn::before,
-#bg-load-btn::before,
-.sidebar-item::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.08), rgba(255,255,255,0.18), rgba(255,255,255,0.08), transparent);
-  animation: liquidSpin 5s linear infinite;
-  z-index: -1;
-  pointer-events: none;
-}
-
-@keyframes liquidSpin {
-  to { transform: rotate(360deg); }
 }
 
 /* ===== Intro Animation ===== */
