@@ -600,7 +600,7 @@ function setTexUniforms(mat, tex) {
 }
 
 const sphereMat = createFilterMaterial(null);
-const sphere = new THREE.Mesh(sphereGeo, sphereMat);
+let sphere = new THREE.Mesh(sphereGeo, sphereMat);
 scene.add(sphere);
 
 const euler = new THREE.Euler(0, 0, 0, 'YXZ');
