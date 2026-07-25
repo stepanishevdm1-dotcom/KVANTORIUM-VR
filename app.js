@@ -528,14 +528,19 @@ document.body.prepend(renderer.domElement);
 const sphereGeo = new THREE.SphereGeometry(SPHERE_RADIUS, 64, 64);
 
 let adjustmentUniforms = null;
+const whiteTex = new THREE.DataTexture(new Uint8Array([255, 255, 255]), 1, 1, THREE.RedFormat);
+whiteTex.needsUpdate = true;
 
 function createFilterMaterial(texture) {
+  const tex = texture || whiteTex;
   const uniforms = {
-    tDiffuse: { value: texture || null },
+    tDiffuse: { value: tex },
     brightness: { value: settings.brightness },
     saturation: { value: settings.saturation },
     contrast: { value: settings.contrast },
-    sharpness: { value: settings.sharpness }
+    sharpness: { value: settings.sharpness },
+    texWidth: { value: tex.image ? tex.image.width : 2048 },
+    texHeight: { value: tex.image ? tex.image.height : 1024 }
   };
   adjustmentUniforms = uniforms;
   return new THREE.ShaderMaterial({
@@ -553,6 +558,8 @@ function createFilterMaterial(texture) {
       uniform float saturation;
       uniform float contrast;
       uniform float sharpness;
+      uniform float texWidth;
+      uniform float texHeight;
       varying vec2 vUv;
       void main() {
         vec4 texel = texture2D(tDiffuse, vUv);
@@ -562,8 +569,8 @@ function createFilterMaterial(texture) {
         float gray = dot(col, vec3(0.299, 0.587, 0.114));
         col = mix(vec3(gray), col, saturation);
         if (sharpness > 0.0) {
-          vec2 ts = 1.0 / vec2(textureSize(tDiffuse, 0));
-          vec3 s = col * 5.0;
+          vec2 ts = vec2(1.0 / texWidth, 1.0 / texHeight);
+          vec3 s = col * 9.0;
           s -= texture2D(tDiffuse, vUv + vec2(-ts.x, -ts.y)).rgb;
           s -= texture2D(tDiffuse, vUv + vec2(0.0, -ts.y)).rgb;
           s -= texture2D(tDiffuse, vUv + vec2(ts.x, -ts.y)).rgb;
@@ -572,13 +579,24 @@ function createFilterMaterial(texture) {
           s -= texture2D(tDiffuse, vUv + vec2(-ts.x, ts.y)).rgb;
           s -= texture2D(tDiffuse, vUv + vec2(0.0, ts.y)).rgb;
           s -= texture2D(tDiffuse, vUv + vec2(ts.x, ts.y)).rgb;
-          col = mix(col, s, sharpness);
+          col = mix(col, clamp(s, 0.0, 1.0), sharpness);
         }
         gl_FragColor = vec4(col, 1.0);
       }
     `,
     side: THREE.BackSide
   });
+}
+
+function setTexUniforms(mat, tex) {
+  if (mat.uniforms) {
+    mat.uniforms.tDiffuse.value = tex;
+    mat.uniforms.texWidth.value = tex.image ? tex.image.width : 2048;
+    mat.uniforms.texHeight.value = tex.image ? tex.image.height : 1024;
+  } else {
+    mat.map = tex;
+    mat.needsUpdate = true;
+  }
 }
 
 const sphereMat = createFilterMaterial(null);
@@ -590,12 +608,7 @@ const hotspotVec = new THREE.Vector3(0, 0, -1);
 
 // Фон для экрана загрузки — Главный вход грузится сразу
 let mainTexPromise = loadTexture(scenes.main_entrance.variants[0].image).then(tex => {
-  if (sphere.material.uniforms) {
-    sphere.material.uniforms.tDiffuse.value = tex;
-  } else {
-    sphere.material.map = tex;
-    sphere.material.needsUpdate = true;
-  }
+  setTexUniforms(sphere.material, tex);
 });
 
 /* ============================================================
