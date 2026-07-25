@@ -1442,9 +1442,8 @@ function rebuildLanguageUI() {
   settingsPanelBuilt = false;
   settingsPanel.innerHTML = '';
   buildSettingsPanel();
-  if (!sidebarList.classList.contains('hidden')) {
-    buildSidebar();
-  } else {
+  buildSidebar();
+  if (sidebarList.classList.contains('hidden')) {
     sidebarTitle.textContent = t('settings_title');
   }
   settingsBtn.title = t('settings_title');
