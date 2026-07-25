@@ -249,13 +249,23 @@ const scenes = {
         returnYaw: 2.094, returnPitch: 0 }
     ]
   },
+  'floor3_13': {
+    name: 'Третий этаж 13',
+    variants: [
+      { label: 'Обычная', image: '3 этаж 13.jpg' }
+    ],
+    hotspots: [
+    ]
+  },
   'chess_living': {
     name: 'Шахматная гостиная',
     variants: [
       { label: 'Обычная', image: 'шахматная гостиная.jpg' }
     ],
     hotspots: [
-      { yaw: 2.094, pitch: 0, label: 'Третий этаж 12', target: 'floor3_12',
+      { yaw: 3.110, pitch: -0.091, label: 'Третий этаж 12', target: 'floor3_12',
+        returnYaw: 2.094, returnPitch: 0 },
+      { yaw: 4.741, pitch: -0.056, label: 'Третий этаж 13', target: 'floor3_13',
         returnYaw: 2.094, returnPitch: 0 }
     ]
   },
@@ -309,7 +319,7 @@ const scenes = {
 
 const sidebarGroups = [
   { label: null, scenes: ['main_entrance', 'security'] },
-  { label: 'Третий этаж', scenes: ['floor3', 'floor3_1', 'floor3_2', 'floor3_3', 'floor3_4', 'floor3_5', 'floor3_6', 'floor3_7', 'floor3_8', 'floor3_9', 'floor3_10', 'floor3_11', 'floor3_12'] },
+  { label: 'Третий этаж', scenes: ['floor3', 'floor3_1', 'floor3_2', 'floor3_3', 'floor3_4', 'floor3_5', 'floor3_6', 'floor3_7', 'floor3_8', 'floor3_9', 'floor3_10', 'floor3_11', 'floor3_12', 'floor3_13'] },
   { label: 'Кабинеты', scenes: ['industrial_design', 'industrial_design_2', 'robo', 'kabinet_304', 'radio_station', 'energikvantum', 'energikvantum_2', 'chess_living'] }
 ];
 
@@ -431,6 +441,7 @@ const sceneNamesEn = {
   'floor3_10': 'Floor 3 \u2014 10',
   'floor3_11': 'Floor 3 \u2014 11',
   'floor3_12': 'Floor 3 \u2014 12',
+  'floor3_13': 'Floor 3 \u2014 13',
   'chess_living': 'Chess Living Room',
   'industrial_design': 'Industrial Design Room',
   'industrial_design_2': 'Industrial Design Room 2',
@@ -457,6 +468,7 @@ const hotspotLabelEn = {
   '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 10': 'Floor 3 \u2014 10',
   '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 11': 'Floor 3 \u2014 11',
   '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 12': 'Floor 3 \u2014 12',
+  '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 13': 'Floor 3 \u2014 13',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u041f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u0434\u0438\u0437\u0430\u0439\u043d': 'Industrial Design Room',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u041f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u0434\u0438\u0437\u0430\u0439\u043d 2': 'Industrial Design Room 2',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u0420\u043e\u0431\u043e\u043a\u0432\u0430\u043d\u0442\u0443\u043c': 'Roboquantum Room',
@@ -1837,6 +1849,15 @@ settingsBtn.addEventListener('click', (e) => {
 /* ============================================================
    WHEEL ZOOM
    ============================================================ */
+/* ============================================================
+   FPS COUNTER
+   ============================================================ */
+const fpsEl = document.createElement('div');
+fpsEl.style.cssText = 'position:fixed;top:12px;right:12px;z-index:500;background:rgba(0,0,0,0.5);padding:4px 10px;border-radius:8px;font-family:"Courier New",monospace;font-size:0.75rem;color:#0f0;pointer-events:none;line-height:1.5;';
+document.body.appendChild(fpsEl);
+let fpsFrames = 0;
+let fpsTime = 0;
+
 renderer.domElement.addEventListener('wheel', e => {
   e.preventDefault();
   targetFov += e.deltaY * 0.08;
@@ -1992,9 +2013,9 @@ function animate(time) {
   camera.fov = fov;
   camera.updateProjectionMatrix();
 
-  const fps = settings.fpsLimit || 0;
-  if (fps > 0) {
-    const minInterval = 1000 / fps;
+  const fpsLimit = settings.fpsLimit || 0;
+  if (fpsLimit > 0) {
+    const minInterval = 1000 / fpsLimit;
     if (time - lastFrameTime < minInterval) {
       if (debugVisible) refreshDebugHUD();
       return;
@@ -2003,6 +2024,13 @@ function animate(time) {
   }
 
   renderer.render(scene, camera);
+
+  fpsFrames++;
+  if (time - fpsTime >= 1000) {
+    fpsEl.textContent = fpsFrames + ' FPS';
+    fpsFrames = 0;
+    fpsTime = time;
+  }
 
   if (debugVisible) refreshDebugHUD();
 }
