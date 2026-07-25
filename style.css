@@ -6,6 +6,8 @@
 
 :root {
   --glass-blur: 16px;
+  --glass-border: 4px;
+  --glass-opacity: 1;
 }
 
 html.no-glass-blur .glass,
@@ -64,12 +66,13 @@ canvas:active {
 .sidebar-item::before {
   content: '';
   position: absolute;
-  inset: -4px;
+  inset: calc(-1 * var(--glass-border));
   border-radius: inherit;
   background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.10), rgba(255,255,255,0.22), rgba(255,255,255,0.10), transparent);
   animation: liquidSpin 5s linear infinite;
   z-index: -1;
   pointer-events: none;
+  opacity: var(--glass-opacity);
 }
 
 @keyframes liquidSpin {

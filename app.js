@@ -381,7 +381,9 @@ const SETTINGS_DEFAULTS = {
   sharpness: 0,
   clarity: 0,
   fpsLimit: 60,
-  glassBlur: 16
+  glassBlur: 16,
+  glassBorder: 4,
+  glassOpacity: 100
 };
 
 const translations = {
@@ -409,6 +411,8 @@ const translations = {
     px: 'px',
     s: 'с',
     glass_blur: 'Стекло',
+    glass_border: 'Толщина обводки',
+    glass_opacity: 'Прозрачность обводки',
   },
   en: {
     loading: 'Loading\u2026 ',
@@ -432,6 +436,8 @@ const translations = {
     copied: 'Copied: ',
     language: 'Language / Язык',
     glass_blur: 'Glass Blur',
+    glass_border: 'Border Thickness',
+    glass_opacity: 'Border Opacity',
     px: 'px',
     s: 's',
   }
@@ -557,7 +563,7 @@ function saveSettings() {
 }
 
 loadSettings();
-applyGlassBlur();
+applyGlassStyle();
 
 /* ============================================================
    THREE.JS
@@ -1448,11 +1454,19 @@ function applySettings() {
   rebuildHotspots();
 }
 
-function applyGlassBlur() {
-  let val = settings.glassBlur;
-  if (val === undefined || val === null) val = 16;
-  document.documentElement.classList.toggle('no-glass-blur', val === 0);
-  document.documentElement.style.setProperty('--glass-blur', (val || 0) + 'px');
+function applyGlassStyle() {
+  let blur = settings.glassBlur;
+  if (blur === undefined || blur === null) blur = 16;
+  document.documentElement.classList.toggle('no-glass-blur', blur === 0);
+  document.documentElement.style.setProperty('--glass-blur', (blur || 0) + 'px');
+
+  let border = settings.glassBorder;
+  if (border === undefined || border === null) border = 4;
+  document.documentElement.style.setProperty('--glass-border', border + 'px');
+
+  let opac = settings.glassOpacity;
+  if (opac === undefined || opac === null) opac = 100;
+  document.documentElement.style.setProperty('--glass-opacity', (opac / 100));
 }
 
 function applyImageAdjustments() {
@@ -1811,11 +1825,57 @@ function buildSettingsPanel() {
       settings.glassBlur = parseInt(input.value);
       val.textContent = settings.glassBlur + 'px';
       saveSettings();
-      applyGlassBlur();
+      applyGlassStyle();
     });
   });
 
-  // 17. Language selector
+  // 17. Glass border thickness
+  addGroup(t('glass_border'), (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 15;
+    input.value = settings.glassBorder;
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = settings.glassBorder + 'px';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.glassBorder = parseInt(input.value);
+      val.textContent = settings.glassBorder + 'px';
+      saveSettings();
+      applyGlassStyle();
+    });
+  });
+
+  // 18. Glass border opacity
+  addGroup(t('glass_opacity'), (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 100;
+    input.value = settings.glassOpacity;
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = settings.glassOpacity + '%';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.glassOpacity = parseInt(input.value);
+      val.textContent = settings.glassOpacity + '%';
+      saveSettings();
+      applyGlassStyle();
+    });
+  });
+
+  // 19. Language selector
   addGroup(t('language'), (g) => {
     const div = document.createElement('div');
     div.className = 'setting-style-options';
