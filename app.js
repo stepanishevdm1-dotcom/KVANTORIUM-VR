@@ -345,6 +345,7 @@ const SETTINGS_DEFAULTS = {
   saturation: 1,
   contrast: 1,
   sharpness: 0,
+  clarity: 0,
   fpsLimit: 60
 };
 
@@ -539,6 +540,7 @@ function createFilterMaterial(texture) {
     saturation: { value: settings.saturation },
     contrast: { value: settings.contrast },
     sharpness: { value: settings.sharpness },
+    clarity: { value: settings.clarity },
     texWidth: { value: tex.image ? tex.image.width : 2048 },
     texHeight: { value: tex.image ? tex.image.height : 1024 }
   };
@@ -558,6 +560,7 @@ function createFilterMaterial(texture) {
       uniform float saturation;
       uniform float contrast;
       uniform float sharpness;
+      uniform float clarity;
       uniform float texWidth;
       uniform float texHeight;
       varying vec2 vUv;
@@ -580,6 +583,16 @@ function createFilterMaterial(texture) {
           s -= texture2D(tDiffuse, vUv + vec2(0.0, ts.y)).rgb;
           s -= texture2D(tDiffuse, vUv + vec2(ts.x, ts.y)).rgb;
           col = mix(col, clamp(s, 0.0, 1.0), sharpness);
+        }
+        if (clarity > 0.0) {
+          vec2 ts = vec2(2.0 / texWidth, 2.0 / texHeight);
+          vec3 blur = texture2D(tDiffuse, vUv + vec2(-ts.x, -ts.y)).rgb;
+          blur += texture2D(tDiffuse, vUv + vec2(ts.x, -ts.y)).rgb;
+          blur += texture2D(tDiffuse, vUv + vec2(-ts.x, ts.y)).rgb;
+          blur += texture2D(tDiffuse, vUv + vec2(ts.x, ts.y)).rgb;
+          blur *= 0.25;
+          col += (col - blur) * clarity;
+          col = clamp(col, 0.0, 1.0);
         }
         gl_FragColor = vec4(col, 1.0);
       }
@@ -1096,6 +1109,7 @@ async function doCrossfadeTransition(targetId, returnYaw, returnPitch) {
     mat2.uniforms.saturation.value = settings.saturation;
     mat2.uniforms.contrast.value = settings.contrast;
     mat2.uniforms.sharpness.value = settings.sharpness;
+    mat2.uniforms.clarity.value = settings.clarity;
     const sphere2 = new THREE.Mesh(sphereGeo, mat2);
     scene.add(sphere2);
 
@@ -1158,6 +1172,7 @@ async function navigateTo(id, variantIdx) {
     mat2.uniforms.saturation.value = settings.saturation;
     mat2.uniforms.contrast.value = settings.contrast;
     mat2.uniforms.sharpness.value = settings.sharpness;
+    mat2.uniforms.clarity.value = settings.clarity;
     const sphere2 = new THREE.Mesh(sphereGeo, mat2);
     scene.add(sphere2);
 
@@ -1327,6 +1342,7 @@ function applyImageAdjustments() {
   adjustmentUniforms.saturation.value = settings.saturation;
   adjustmentUniforms.contrast.value = settings.contrast;
   adjustmentUniforms.sharpness.value = settings.sharpness;
+  adjustmentUniforms.clarity.value = settings.clarity;
 }
 
 function rebuildLanguageUI() {
@@ -1595,7 +1611,30 @@ function buildSettingsPanel() {
     });
   });
 
-  // 13. Reset image adjustments
+  // 13. Clarity
+  addGroup('Четкость', (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 100;
+    input.value = Math.round(settings.clarity * 100);
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = Math.round(settings.clarity * 100) + '%';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.clarity = parseInt(input.value) / 100;
+      val.textContent = input.value + '%';
+      saveSettings();
+      applyImageAdjustments();
+    });
+  });
+
+  // 14. Reset image adjustments
   const resetBtn = document.createElement('div');
   resetBtn.className = 'setting-style-btn';
   resetBtn.textContent = 'Сбросить настройки изображения';
@@ -1605,6 +1644,7 @@ function buildSettingsPanel() {
     settings.saturation = SETTINGS_DEFAULTS.saturation;
     settings.contrast = SETTINGS_DEFAULTS.contrast;
     settings.sharpness = SETTINGS_DEFAULTS.sharpness;
+    settings.clarity = SETTINGS_DEFAULTS.clarity;
     saveSettings();
     settingsPanelBuilt = false;
     const wasSettings = !sidebarList.classList.contains('hidden');
@@ -1615,7 +1655,7 @@ function buildSettingsPanel() {
   });
   settingsPanel.appendChild(resetBtn);
 
-  // 14. FPS limiter
+  // 15. FPS limiter
   addGroup('FPS', (g) => {
     const div = document.createElement('div');
     div.className = 'setting-style-options';
@@ -1634,7 +1674,7 @@ function buildSettingsPanel() {
     g.appendChild(div);
   });
 
-  // 15. Language selector
+  // 16. Language selector
   addGroup(t('language'), (g) => {
     const div = document.createElement('div');
     div.className = 'setting-style-options';
