@@ -1104,7 +1104,6 @@ function animateHotspotTransition(hs, retYaw, retPitch) {
     requestAnimationFrame(() => { climbTextEl.style.opacity = '1'; });
   }
 
-  renderer.domElement.style.filter = 'blur(6px)';
   const startTime = performance.now();
 
   function step(now) {
@@ -1180,7 +1179,8 @@ async function doCrossfadeTransition(targetId, returnYaw, returnPitch) {
     buildSidebar();
 
     sphere.material.transparent = true;
-    renderer.domElement.style.filter = 'blur(6px)';
+    renderer.domElement.style.transition = 'filter 0.25s ease';
+    renderer.domElement.style.filter = 'blur(5px)';
     const cfStart = performance.now();
     const cfDur = 500;
     await new Promise(resolve => {
@@ -1190,6 +1190,7 @@ async function doCrossfadeTransition(targetId, returnYaw, returnPitch) {
         sphere2.material.opacity = t;
         if (t < 1) { requestAnimationFrame(cfStep); return; }
         renderer.domElement.style.filter = '';
+        setTimeout(() => { renderer.domElement.style.transition = ''; }, 300);
         scene.remove(sphere);
         sphere.material.dispose();
         sphere2.material.transparent = false;
@@ -1201,6 +1202,7 @@ async function doCrossfadeTransition(targetId, returnYaw, returnPitch) {
     });
   } catch (e) {
     renderer.domElement.style.filter = '';
+    renderer.domElement.style.transition = '';
     console.error(e);
   }
 }
@@ -1248,7 +1250,8 @@ async function navigateTo(id, variantIdx) {
     buildSidebar();
 
     sphere.material.transparent = true;
-    renderer.domElement.style.filter = 'blur(6px)';
+    renderer.domElement.style.transition = 'filter 0.25s ease';
+    renderer.domElement.style.filter = 'blur(5px)';
     const cfStart = performance.now();
     const cfDur = 500;
     function step(now) {
@@ -1257,6 +1260,7 @@ async function navigateTo(id, variantIdx) {
       sphere2.material.opacity = t;
       if (t < 1) { requestAnimationFrame(step); return; }
       renderer.domElement.style.filter = '';
+      setTimeout(() => { renderer.domElement.style.transition = ''; }, 300);
       scene.remove(sphere);
       sphere.material.dispose();
       sphere2.material.transparent = false;
@@ -1277,6 +1281,7 @@ async function navigateTo(id, variantIdx) {
     requestAnimationFrame(step);
   } catch (e) {
     renderer.domElement.style.filter = '';
+    renderer.domElement.style.transition = '';
     console.error(e);
     isTransitioning = false;
   }
