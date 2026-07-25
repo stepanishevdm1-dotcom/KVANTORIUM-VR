@@ -619,8 +619,39 @@ scene.add(sphere);
 const euler = new THREE.Euler(0, 0, 0, 'YXZ');
 const hotspotVec = new THREE.Vector3(0, 0, -1);
 
-// Фон для экрана загрузки — Главный вход грузится сразу
-let mainTexPromise = loadTexture(scenes.main_entrance.variants[0].image).then(tex => {
+// Главный вход грузится сразу с замером скорости
+const mainFileUrl = encodeURI(scenes.main_entrance.variants[0].image);
+let mainTexPromise = fetch(mainFileUrl).then(async response => {
+  const reader = response.body.getReader();
+  const total = parseInt(response.headers.get('content-length') || 0);
+  let loaded = 0;
+  const chunks = [];
+  const startTime = performance.now();
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.length;
+    updateSpeed(loaded, (performance.now() - startTime) / 1000);
+  }
+
+  const blob = new Blob(chunks);
+  const imgUrl = URL.createObjectURL(blob);
+  return new Promise((resolve, reject) => {
+    const loader = new THREE.TextureLoader();
+    loader.load(imgUrl, tex => {
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.needsUpdate = true;
+      imageCache[mainFileUrl] = tex;
+      URL.revokeObjectURL(imgUrl);
+      resolve(tex);
+    }, undefined, reject);
+  });
+}).then(tex => {
+  sphere.material.transparent = true;
+  sphere.material.opacity = 0;
   setTexUniforms(sphere.material, tex);
 });
 
@@ -630,6 +661,7 @@ let mainTexPromise = loadTexture(scenes.main_entrance.variants[0].image).then(te
 const preloadList = document.getElementById('preload-list');
 const bgProgress = document.getElementById('bg-progress');
 const loadingStatus = document.getElementById('loading-status');
+const loadingSpeed = document.getElementById('loading-speed');
 const loadingEl = document.getElementById('loading');
 const loadingHint = document.getElementById('loading-hint');
 const bgLoadBtn = document.getElementById('bg-load-btn');
@@ -654,12 +686,18 @@ function humanSize(bytes) {
   return mb.toFixed(1) + 'MB';
 }
 
+function updateSpeed(loaded, elapsed) {
+  const speed = elapsed > 0 ? (loaded / elapsed) : 0;
+  loadingSpeed.textContent = (speed / (1024 * 1024)).toFixed(1) + ' MB/s';
+}
+
 function preloadAll() {
   const images = getAllImages();
   const total = images.length;
   let loadedFiles = 0;
   let totalBytes = 0;
   let loadedBytes = 0;
+  let startTime = 0;
 
   if (total === 0) {
     loadingEl.classList.add('hidden');
@@ -673,6 +711,7 @@ function preloadAll() {
       .then(r => parseInt(r.headers.get('content-length') || 0))
       .catch(() => 0)
   )).then(sizes => {
+    startTime = performance.now();
     totalBytes = sizes.reduce((a, b) => a + b, 0);
 
     // Главный вход уже загружен для фона — не качаем повторно
@@ -696,6 +735,7 @@ function preloadAll() {
       preloadList.appendChild(item);
 
       const url = encodeURI(img.file);
+      const fileStartTime = performance.now();
 
       (async () => {
         try {
@@ -711,6 +751,7 @@ function preloadAll() {
             progSpan.textContent = humanSize(recv) + '/' + humanSize(fileSize) + ' ' + filePct + '%';
             loadedBytes += value.length;
             loadingStatus.textContent = t('loading') + humanSize(loadedBytes) + '/' + humanSize(totalBytes) + ' ' + (totalBytes ? Math.round((loadedBytes / totalBytes) * 100) : 0) + '%';
+            updateSpeed(loadedBytes, (performance.now() - startTime) / 1000);
           }
 
           loadedFiles++;
@@ -1917,9 +1958,24 @@ animate();
 buildSidebar();
 updateDebugHUD();
 
-// После intro-анимации (~4.5 с) запускаем загрузку остальных панорам
+// После intro-анимации плавно показываем фон и запускаем загрузку
 setTimeout(() => {
-  preloadAll();
+  loadingSpeed.textContent = '';
+  const fadeStart = performance.now();
+  const fadeDur = 600;
+  let loaded = false;
+  function fadeStep(now) {
+    const t = Math.min((now - fadeStart) / fadeDur, 1);
+    sphere.material.opacity = t;
+    sphere.material.needsUpdate = true;
+    if (t >= 1 && !loaded) {
+      loaded = true;
+      sphere.material.transparent = false;
+      preloadAll();
+    }
+    if (t < 1) requestAnimationFrame(fadeStep);
+  }
+  requestAnimationFrame(fadeStep);
 }, 4200);
 
 setInterval(() => { if (isTransitioning) isTransitioning = false; }, 10000);
