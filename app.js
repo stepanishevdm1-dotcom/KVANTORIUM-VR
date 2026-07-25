@@ -244,7 +244,19 @@ const scenes = {
     ],
     hotspots: [
       { yaw: 3.135, pitch: 0, label: 'Третий этаж 11', target: 'floor3_11',
-        returnYaw: 3.238, returnPitch: 0 }
+        returnYaw: 3.238, returnPitch: 0 },
+      { yaw: 6.201, pitch: -0.115, label: 'Шахматная гостиная', target: 'chess_living',
+        returnYaw: 2.094, returnPitch: 0 }
+    ]
+  },
+  'chess_living': {
+    name: 'Шахматная гостиная',
+    variants: [
+      { label: 'Обычная', image: 'шахматная гостиная.jpg' }
+    ],
+    hotspots: [
+      { yaw: 2.094, pitch: 0, label: 'Третий этаж 12', target: 'floor3_12',
+        returnYaw: 2.094, returnPitch: 0 }
     ]
   },
   'kabinet_304': {
@@ -298,7 +310,7 @@ const scenes = {
 const sidebarGroups = [
   { label: null, scenes: ['main_entrance', 'security'] },
   { label: 'Третий этаж', scenes: ['floor3', 'floor3_1', 'floor3_2', 'floor3_3', 'floor3_4', 'floor3_5', 'floor3_6', 'floor3_7', 'floor3_8', 'floor3_9', 'floor3_10', 'floor3_11', 'floor3_12'] },
-  { label: 'Кабинеты', scenes: ['industrial_design', 'industrial_design_2', 'robo', 'kabinet_304', 'radio_station', 'energikvantum', 'energikvantum_2'] }
+  { label: 'Кабинеты', scenes: ['industrial_design', 'industrial_design_2', 'robo', 'kabinet_304', 'radio_station', 'energikvantum', 'energikvantum_2', 'chess_living'] }
 ];
 
 const DEFAULT_SCENE = 'main_entrance';
@@ -346,7 +358,8 @@ const SETTINGS_DEFAULTS = {
   contrast: 1,
   sharpness: 0,
   clarity: 0,
-  fpsLimit: 60
+  fpsLimit: 60,
+  glassBlur: 16
 };
 
 const translations = {
@@ -373,6 +386,7 @@ const translations = {
     language: 'Язык / Language',
     px: 'px',
     s: 'с',
+    glass_blur: 'Стекло',
   },
   en: {
     loading: 'Loading\u2026 ',
@@ -395,6 +409,7 @@ const translations = {
     debug_on: 'Debug enabled',
     copied: 'Copied: ',
     language: 'Language / Язык',
+    glass_blur: 'Glass Blur',
     px: 'px',
     s: 's',
   }
@@ -416,6 +431,7 @@ const sceneNamesEn = {
   'floor3_10': 'Floor 3 \u2014 10',
   'floor3_11': 'Floor 3 \u2014 11',
   'floor3_12': 'Floor 3 \u2014 12',
+  'chess_living': 'Chess Living Room',
   'industrial_design': 'Industrial Design Room',
   'industrial_design_2': 'Industrial Design Room 2',
   'robo': 'Roboquantum Room',
@@ -453,6 +469,7 @@ const hotspotLabelEn = {
   '\u042d\u043d\u0435\u0440\u0434\u0436\u0438\u043a\u0432\u0430\u043d\u0442\u0443\u043c 2': 'Energiquantom 2',
   '\u041f\u043e\u0434\u043d\u0438\u043c\u0430\u0435\u043c\u0441\u044f \u043d\u0430 3 \u044d\u0442\u0430\u0436': 'Going up to Floor 3',
   '\u0421\u043f\u0443\u0441\u043a\u0430\u0435\u043c\u0441\u044f \u043d\u0430 1 \u044d\u0442\u0430\u0436': 'Going down to Floor 1',
+  '\u0428\u0430\u0445\u043c\u0430\u0442\u043d\u0430\u044f \u0433\u043e\u0441\u0442\u0438\u043d\u0430\u044f': 'Chess Living Room',
 };
 
 const variantLabelEn = {
@@ -514,6 +531,7 @@ function saveSettings() {
 }
 
 loadSettings();
+applyGlassBlur();
 
 /* ============================================================
    THREE.JS
@@ -1122,6 +1140,10 @@ function animateHotspotTransition(hs, retYaw, retPitch) {
       yaw = startYaw + deltaYaw * (1 - Math.pow(1 - t, 2));
       pitch = startPitch + (targetHsPitch - startPitch) * t + lean + stepPitch + bob;
       fov = startFov + (55 - startFov) * Math.pow(t / 0.65, 1.5);
+      if (t >= 0.55) {
+        renderer.domElement.style.transition = 'filter 0.25s ease';
+        renderer.domElement.style.filter = 'blur(5px)';
+      }
       if (t >= 0.65) {
         crossfadeStarted = true;
         doCrossfadeTransition(hs.target, retYaw, retPitch);
@@ -1398,6 +1420,11 @@ function rebuildHotspots() {
 
 function applySettings() {
   rebuildHotspots();
+}
+
+function applyGlassBlur() {
+  const val = settings.glassBlur || 16;
+  document.documentElement.style.setProperty('--glass-blur', val + 'px');
 }
 
 function applyImageAdjustments() {
@@ -1680,7 +1707,7 @@ function buildSettingsPanel() {
     const input = document.createElement('input');
     input.type = 'range';
     input.min = 0;
-    input.max = 100;
+    input.max = 200;
     input.value = Math.round(settings.clarity * 100);
     const val = document.createElement('span');
     val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
@@ -1738,7 +1765,30 @@ function buildSettingsPanel() {
     g.appendChild(div);
   });
 
-  // 16. Language selector
+  // 16. Glass blur
+  addGroup(t('glass_blur'), (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 40;
+    input.value = settings.glassBlur;
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = settings.glassBlur + 'px';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.glassBlur = parseInt(input.value);
+      val.textContent = settings.glassBlur + 'px';
+      saveSettings();
+      applyGlassBlur();
+    });
+  });
+
+  // 17. Language selector
   addGroup(t('language'), (g) => {
     const div = document.createElement('div');
     div.className = 'setting-style-options';
