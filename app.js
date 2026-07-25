@@ -987,11 +987,13 @@ function onPointerUp(e) {
     const hs = pickHotspot(x, y);
     if (hs) {
       isDragging = false;
+      const retYaw = (hs.yaw + Math.PI) % (2 * Math.PI);
+      const retPitch = hs.pitch || 0;
       if (settings.animations && settings.transitionSpeed > 0) {
-        animateHotspotTransition(hs);
+        animateHotspotTransition(hs, retYaw, retPitch);
       } else {
         isTransitioning = true;
-        doCrossfadeTransition(hs.target, hs.returnYaw, hs.returnPitch).then(() => {
+        doCrossfadeTransition(hs.target, retYaw, retPitch).then(() => {
           isTransitioning = false;
         });
       }
@@ -1026,7 +1028,7 @@ function onPointerMove(e) {
 let transitionAnimId = null;
 let crossfadeStarted = false;
 
-function animateHotspotTransition(hs) {
+function animateHotspotTransition(hs, retYaw, retPitch) {
   if (isTransitioning) return;
   isTransitioning = true;
   crossfadeStarted = false;
@@ -1063,8 +1065,8 @@ function animateHotspotTransition(hs) {
     const bob = climb || descend ? 0 : Math.sin(t * Math.PI * 7) * 0.012 * Math.min(t * 4, 1);
 
     if (crossfadeStarted) {
-      yaw = hs.returnYaw;
-      pitch = (hs.returnPitch || 0) + lean + stepPitch + bob;
+      yaw = retYaw;
+      pitch = retPitch + lean + stepPitch + bob;
       const postT = Math.min((t - 0.65) / 0.35, 1);
       fov = 120 + (75 - 120) * Math.pow(postT, 1.5);
     } else {
@@ -1073,7 +1075,7 @@ function animateHotspotTransition(hs) {
       fov = startFov + (55 - startFov) * Math.pow(t / 0.65, 1.5);
       if (t >= 0.65) {
         crossfadeStarted = true;
-        doCrossfadeTransition(hs.target, hs.returnYaw, hs.returnPitch);
+        doCrossfadeTransition(hs.target, retYaw, retPitch);
       }
     }
     targetYaw = yaw;
