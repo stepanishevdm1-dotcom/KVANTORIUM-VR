@@ -255,6 +255,18 @@ const scenes = {
       { label: 'Обычная', image: '3 этаж 13.jpg' }
     ],
     hotspots: [
+      { yaw: 6.326, pitch: -0.122, label: 'Шахматная гостиная', target: 'chess_living',
+        returnYaw: 4.741, returnPitch: -0.056 },
+      { yaw: 3.117, pitch: -0.093, label: 'Третий этаж 14', target: 'floor3_14',
+        returnYaw: 2.094, returnPitch: 0 }
+    ]
+  },
+  'floor3_14': {
+    name: 'Третий этаж 14',
+    variants: [
+      { label: 'Обычная', image: '3 этаж 14.jpg' }
+    ],
+    hotspots: [
     ]
   },
   'chess_living': {
@@ -319,7 +331,7 @@ const scenes = {
 
 const sidebarGroups = [
   { label: null, scenes: ['main_entrance', 'security'] },
-  { label: 'Третий этаж', scenes: ['floor3', 'floor3_1', 'floor3_2', 'floor3_3', 'floor3_4', 'floor3_5', 'floor3_6', 'floor3_7', 'floor3_8', 'floor3_9', 'floor3_10', 'floor3_11', 'floor3_12', 'floor3_13'] },
+  { label: 'Третий этаж', scenes: ['floor3', 'floor3_1', 'floor3_2', 'floor3_3', 'floor3_4', 'floor3_5', 'floor3_6', 'floor3_7', 'floor3_8', 'floor3_9', 'floor3_10', 'floor3_11', 'floor3_12', 'floor3_13', 'floor3_14'] },
   { label: 'Кабинеты', scenes: ['industrial_design', 'industrial_design_2', 'robo', 'kabinet_304', 'radio_station', 'energikvantum', 'energikvantum_2', 'chess_living'] }
 ];
 
@@ -442,6 +454,7 @@ const sceneNamesEn = {
   'floor3_11': 'Floor 3 \u2014 11',
   'floor3_12': 'Floor 3 \u2014 12',
   'floor3_13': 'Floor 3 \u2014 13',
+  'floor3_14': 'Floor 3 \u2014 14',
   'chess_living': 'Chess Living Room',
   'industrial_design': 'Industrial Design Room',
   'industrial_design_2': 'Industrial Design Room 2',
@@ -469,6 +482,7 @@ const hotspotLabelEn = {
   '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 11': 'Floor 3 \u2014 11',
   '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 12': 'Floor 3 \u2014 12',
   '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 13': 'Floor 3 \u2014 13',
+  '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 14': 'Floor 3 \u2014 14',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u041f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u0434\u0438\u0437\u0430\u0439\u043d': 'Industrial Design Room',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u041f\u0440\u043e\u043c\u044b\u0448\u043b\u0435\u043d\u043d\u044b\u0439 \u0434\u0438\u0437\u0430\u0439\u043d 2': 'Industrial Design Room 2',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u0420\u043e\u0431\u043e\u043a\u0432\u0430\u043d\u0442\u0443\u043c': 'Roboquantum Room',
@@ -2015,7 +2029,7 @@ function animate(time) {
 
   const fpsLimit = settings.fpsLimit || 0;
   if (fpsLimit > 0) {
-    const minInterval = 1000 / fpsLimit;
+    const minInterval = 1000 / fpsLimit - 1;
     if (time - lastFrameTime < minInterval) {
       if (debugVisible) refreshDebugHUD();
       return;
