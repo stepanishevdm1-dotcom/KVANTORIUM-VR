@@ -987,8 +987,16 @@ function onPointerUp(e) {
     const hs = pickHotspot(x, y);
     if (hs) {
       isDragging = false;
-      const retYaw = (hs.yaw + Math.PI) % (2 * Math.PI);
-      const retPitch = hs.pitch || 0;
+      const targetScene = scenes[hs.target];
+      let retYaw = (hs.yaw + Math.PI) % (2 * Math.PI);
+      let retPitch = hs.pitch || 0;
+      if (targetScene) {
+        const returnHS = targetScene.hotspots.find(h => h.target === currentSceneId);
+        if (returnHS) {
+          retYaw = (returnHS.yaw + Math.PI) % (2 * Math.PI);
+          retPitch = returnHS.pitch || 0;
+        }
+      }
       if (settings.animations && settings.transitionSpeed > 0) {
         animateHotspotTransition(hs, retYaw, retPitch);
       } else {
