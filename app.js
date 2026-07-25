@@ -344,7 +344,8 @@ const SETTINGS_DEFAULTS = {
   brightness: 0,
   saturation: 1,
   contrast: 1,
-  sharpness: 0
+  sharpness: 0,
+  fpsLimit: 60
 };
 
 const translations = {
@@ -1581,7 +1582,46 @@ function buildSettingsPanel() {
     });
   });
 
-  // 13. Language selector
+  // 13. Reset image adjustments
+  const resetBtn = document.createElement('div');
+  resetBtn.className = 'setting-style-btn';
+  resetBtn.textContent = 'Сбросить настройки изображения';
+  resetBtn.style.cssText = 'text-align:center;padding:8px 0;margin-top:4px;font-size:0.78rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;color:#aaa;transition:all 0.2s';
+  resetBtn.addEventListener('click', () => {
+    settings.brightness = SETTINGS_DEFAULTS.brightness;
+    settings.saturation = SETTINGS_DEFAULTS.saturation;
+    settings.contrast = SETTINGS_DEFAULTS.contrast;
+    settings.sharpness = SETTINGS_DEFAULTS.sharpness;
+    saveSettings();
+    settingsPanelBuilt = false;
+    const wasSettings = !sidebarList.classList.contains('hidden');
+    settingsPanel.innerHTML = '';
+    buildSettingsPanel();
+    if (wasSettings) showSettings(); else showSceneList();
+    applyImageAdjustments();
+  });
+  settingsPanel.appendChild(resetBtn);
+
+  // 14. FPS limiter
+  addGroup('FPS', (g) => {
+    const div = document.createElement('div');
+    div.className = 'setting-style-options';
+    [0, 15, 30, 60, 120].forEach(val => {
+      const btn = document.createElement('div');
+      btn.className = 'setting-style-btn' + (settings.fpsLimit === val ? ' active' : '');
+      btn.textContent = val === 0 ? 'Max' : String(val);
+      btn.addEventListener('click', () => {
+        settings.fpsLimit = val;
+        saveSettings();
+        div.querySelectorAll('.setting-style-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+      div.appendChild(btn);
+    });
+    g.appendChild(div);
+  });
+
+  // 15. Language selector
   addGroup(t('language'), (g) => {
     const div = document.createElement('div');
     div.className = 'setting-style-options';
@@ -1769,7 +1809,9 @@ window.addEventListener('resize', () => {
 /* ============================================================
    RENDER LOOP
    ============================================================ */
-function animate() {
+let lastFrameTime = 0;
+
+function animate(time) {
   requestAnimationFrame(animate);
   if (loadingRotate) targetYaw += 0.002;
 
@@ -1781,6 +1823,16 @@ function animate() {
   camera.quaternion.setFromEuler(euler);
   camera.fov = fov;
   camera.updateProjectionMatrix();
+
+  const fps = settings.fpsLimit || 0;
+  if (fps > 0) {
+    const minInterval = 1000 / fps;
+    if (time - lastFrameTime < minInterval) {
+      if (debugVisible) refreshDebugHUD();
+      return;
+    }
+    lastFrameTime = time;
+  }
 
   renderer.render(scene, camera);
 
