@@ -267,6 +267,8 @@ const scenes = {
       { label: 'Обычная', image: '3 этаж 14.jpg' }
     ],
     hotspots: [
+      { yaw: 3.117, pitch: -0.093, label: 'Третий этаж 13', target: 'floor3_13',
+        returnYaw: 0, returnPitch: 0 }
     ]
   },
   'chess_living': {
@@ -376,6 +378,7 @@ const SETTINGS_DEFAULTS = {
   transitionSpeed: 2500,
   language: 'ru',
   brightness: 0,
+  darkness: 0,
   saturation: 1,
   contrast: 1,
   sharpness: 0,
@@ -413,6 +416,7 @@ const translations = {
     glass_blur: 'Стекло',
     glass_border: 'Толщина обводки',
     glass_opacity: 'Прозрачность обводки',
+    darkness: 'Темность',
   },
   en: {
     loading: 'Loading\u2026 ',
@@ -438,6 +442,7 @@ const translations = {
     glass_blur: 'Glass Blur',
     glass_border: 'Border Thickness',
     glass_opacity: 'Border Opacity',
+    darkness: 'Darkness',
     px: 'px',
     s: 's',
   }
@@ -587,6 +592,7 @@ function createFilterMaterial(texture) {
   const uniforms = {
     tDiffuse: { value: tex },
     brightness: { value: settings.brightness },
+    darkness: { value: settings.darkness },
     saturation: { value: settings.saturation },
     contrast: { value: settings.contrast },
     sharpness: { value: settings.sharpness },
@@ -607,6 +613,7 @@ function createFilterMaterial(texture) {
     fragmentShader: `
       uniform sampler2D tDiffuse;
       uniform float brightness;
+      uniform float darkness;
       uniform float saturation;
       uniform float contrast;
       uniform float sharpness;
@@ -644,6 +651,7 @@ function createFilterMaterial(texture) {
           col += (col - blur) * clarity;
           col = clamp(col, 0.0, 1.0);
         }
+        col = mix(col, vec3(0.0), darkness);
         gl_FragColor = vec4(col, 1.0);
       }
     `,
@@ -1472,6 +1480,7 @@ function applyGlassStyle() {
 function applyImageAdjustments() {
   if (!adjustmentUniforms) return;
   adjustmentUniforms.brightness.value = settings.brightness;
+  adjustmentUniforms.darkness.value = settings.darkness;
   adjustmentUniforms.saturation.value = settings.saturation;
   adjustmentUniforms.contrast.value = settings.contrast;
   adjustmentUniforms.sharpness.value = settings.sharpness;
@@ -1773,6 +1782,7 @@ function buildSettingsPanel() {
   resetBtn.style.cssText = 'text-align:center;padding:8px 0;margin-top:4px;font-size:0.78rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;color:#aaa;transition:all 0.2s';
   resetBtn.addEventListener('click', () => {
     settings.brightness = SETTINGS_DEFAULTS.brightness;
+    settings.darkness = SETTINGS_DEFAULTS.darkness;
     settings.saturation = SETTINGS_DEFAULTS.saturation;
     settings.contrast = SETTINGS_DEFAULTS.contrast;
     settings.sharpness = SETTINGS_DEFAULTS.sharpness;
@@ -1875,7 +1885,30 @@ function buildSettingsPanel() {
     });
   });
 
-  // 19. Language selector
+  // 19. Darkness
+  addGroup('Темность', (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 100;
+    input.value = Math.round(settings.darkness * 100);
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = Math.round(settings.darkness * 100) + '%';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.darkness = parseInt(input.value) / 100;
+      val.textContent = input.value + '%';
+      saveSettings();
+      applyImageAdjustments();
+    });
+  });
+
+  // 20. Language selector
   addGroup(t('language'), (g) => {
     const div = document.createElement('div');
     div.className = 'setting-style-options';
@@ -2146,15 +2179,14 @@ const introLetters = document.querySelectorAll('#intro-letters span');
 const introSub = document.getElementById('intro-sub');
 const introShapes = document.querySelectorAll('.shape');
 
-requestAnimationFrame(() => {
-  introEl.classList.add('show');
-  introLetters.forEach((span, i) => {
-    setTimeout(() => span.classList.add('in'), i * 120);
-  });
-  setTimeout(() => introSub.classList.add('in'), 2000);
-  introShapes.forEach((s, i) => {
-    setTimeout(() => s.classList.add('show'), 1400 + i * 100);
-  });
+introEl.classList.add('show');
+
+introLetters.forEach((span, i) => {
+  setTimeout(() => span.classList.add('in'), i * 120);
+});
+setTimeout(() => introSub.classList.add('in'), 2000);
+introShapes.forEach((s, i) => {
+  setTimeout(() => s.classList.add('show'), 1400 + i * 100);
 });
 
 setTimeout(() => {

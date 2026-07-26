@@ -91,6 +91,7 @@ canvas:active {
   background: #000;
   opacity: 0;
   pointer-events: none;
+  transition: opacity 0.5s ease;
 }
 
 #intro.show {
