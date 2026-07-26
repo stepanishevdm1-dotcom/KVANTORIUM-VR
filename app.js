@@ -264,7 +264,7 @@ const scenes = {
   'floor3_14': {
     name: 'Третий этаж 14',
     variants: [
-      { label: 'Обычная', image: '3 этаж 14.jpg' }
+      { label: 'Обычная', image: '3 этаж 14(3).jpg' }
     ],
     hotspots: [
       { yaw: 3.117, pitch: -0.093, label: 'Третий этаж 13', target: 'floor3_13',
