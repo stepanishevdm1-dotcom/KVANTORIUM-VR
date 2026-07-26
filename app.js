@@ -338,7 +338,7 @@ const scenes = {
       { yaw: 4.215, pitch: -0.0454, label: 'Кабинет Лекторий', target: 'lektoriy',
         returnYaw: 0, returnPitch: 0 },
       { yaw: 5.175, pitch: -0.0297, label: 'Третий этаж 14', target: 'floor3_14',
-        returnYaw: -2.431, returnPitch: -0.0541 }
+        returnYaw: -2.461, returnPitch: -0.0750 }
     ]
   },
   'hightech': {
@@ -362,7 +362,7 @@ const scenes = {
       { yaw: -1.508, pitch: -0.0593, label: 'Кабинет Хай-Тек цех', target: 'hightech',
         returnYaw: 0, returnPitch: 0 },
       { yaw: -0.578, pitch: 0, label: 'Третий этаж 15', target: 'floor3_15',
-        returnYaw: 0, returnPitch: 0 }
+        returnYaw: 3.894, returnPitch: -0.0401 }
     ]
   },
   'kabinet_itkvantum': {
@@ -382,7 +382,12 @@ const scenes = {
     variants: [
       { label: 'Обычная', image: 'кабинет it квантум 2.jpg' }
     ],
-    hotspots: []
+    hotspots: [
+      { yaw: -4.409, pitch: -0.0489, label: 'Кабинет IT-Квантум', target: 'kabinet_itkvantum',
+        returnYaw: 0, returnPitch: 0 },
+      { yaw: -4.229, pitch: -0.0332, label: 'Третий этаж 17', target: 'floor3_17',
+        returnYaw: 0, returnPitch: 0 }
+    ]
   },
   'chess_living': {
     name: 'Шахматная гостиная',
