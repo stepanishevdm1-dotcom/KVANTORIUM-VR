@@ -126,7 +126,7 @@ canvas:active {
 }
 
 #intro-letters span.in {
-  animation-play-state: running;
+  animation-play-state: running !important;
 } 
 
 #intro-letters span:nth-child(1)  { animation: letterDrop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0s forwards; animation-play-state: paused; }

@@ -1080,7 +1080,6 @@ function onPointerDown(e) {
 
 function onPointerUp(e) {
   if (isTransitioning) return;
-  if (!e.target || !renderer.domElement.contains(e.target)) return;
   const { x, y } = getClientXY(e);
   if (draggedDistance < 5) {
     const hs = pickHotspot(x, y);
