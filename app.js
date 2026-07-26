@@ -312,6 +312,8 @@ const scenes = {
       { yaw: 4.739, pitch: -0.0873, label: 'Кабинет IT-Квантум', target: 'kabinet_itkvantum',
         returnYaw: 0, returnPitch: 0 },
       { yaw: 3.199, pitch: -0.0628, label: 'Третий этаж 16', target: 'floor3_16',
+        returnYaw: 0, returnPitch: 0 },
+      { yaw: -0.698, pitch: -0.103, label: 'Третий этаж 1', target: 'floor3_1',
         returnYaw: 0, returnPitch: 0 }
     ]
   },
@@ -345,7 +347,7 @@ const scenes = {
       { label: 'Обычная', image: 'Кабинет Хай тек цех.jpg' }
     ],
     hotspots: [
-      { yaw: 3.580, pitch: -0.0244, label: 'Третий этаж 13', target: 'floor3_13',
+      { yaw: 3.580, pitch: -0.0244, label: 'Третий этаж 15', target: 'floor3_15',
         returnYaw: 0, returnPitch: 0 },
       { yaw: 4.894, pitch: -0.0750, label: 'Кабинет Хай-Тек цех 2', target: 'hightech_2',
         returnYaw: 0, returnPitch: 0 }
@@ -356,12 +358,29 @@ const scenes = {
     variants: [
       { label: 'Обычная', image: 'Кабинет хай тек цех 2.jpg' }
     ],
-    hotspots: []
+    hotspots: [
+      { yaw: -1.508, pitch: -0.0593, label: 'Кабинет Хай-Тек цех', target: 'hightech',
+        returnYaw: 0, returnPitch: 0 },
+      { yaw: -0.578, pitch: 0, label: 'Третий этаж 15', target: 'floor3_15',
+        returnYaw: 0, returnPitch: 0 }
+    ]
   },
   'kabinet_itkvantum': {
     name: 'Кабинет IT-Квантум',
     variants: [
       { label: 'Обычная', image: 'кабинет it квантум.jpg' }
+    ],
+    hotspots: [
+      { yaw: 1.728, pitch: -0.0716, label: 'Третий этаж 17', target: 'floor3_17',
+        returnYaw: 0, returnPitch: 0 },
+      { yaw: 3.578, pitch: -0.103, label: 'Кабинет IT-Квантум 2', target: 'kabinet_itkvantum_2',
+        returnYaw: 0, returnPitch: 0 }
+    ]
+  },
+  'kabinet_itkvantum_2': {
+    name: 'Кабинет IT-Квантум 2',
+    variants: [
+      { label: 'Обычная', image: 'кабинет it квантум 2.jpg' }
     ],
     hotspots: []
   },
@@ -428,7 +447,7 @@ const scenes = {
 const sidebarGroups = [
   { label: null, scenes: ['main_entrance', 'security'] },
   { label: 'Третий этаж', scenes: ['floor3', 'floor3_1', 'floor3_2', 'floor3_3', 'floor3_4', 'floor3_5', 'floor3_6', 'floor3_7', 'floor3_8', 'floor3_9', 'floor3_10', 'floor3_11', 'floor3_12', 'floor3_13', 'floor3_14', 'floor3_15', 'floor3_16', 'floor3_17'] },
-  { label: 'Кабинеты', scenes: ['industrial_design', 'industrial_design_2', 'robo', 'kabinet_304', 'radio_station', 'energikvantum', 'energikvantum_2', 'chess_living', 'lektoriy', 'kabinet_vrar', 'hightech', 'hightech_2', 'kabinet_itkvantum'] }
+  { label: 'Кабинеты', scenes: ['industrial_design', 'industrial_design_2', 'robo', 'kabinet_304', 'radio_station', 'energikvantum', 'energikvantum_2', 'chess_living', 'lektoriy', 'kabinet_vrar', 'hightech', 'hightech_2', 'kabinet_itkvantum', 'kabinet_itkvantum_2'] }
 ];
 
 const DEFAULT_SCENE = 'main_entrance';
@@ -573,6 +592,7 @@ const sceneNamesEn = {
   'hightech': 'High-Tech Workshop',
   'hightech_2': 'High-Tech Workshop 2',
   'kabinet_itkvantum': 'IT-Quantum Room',
+  'kabinet_itkvantum_2': 'IT-Quantum Room 2',
   'energikvantum': 'Energiquantom Room',
   'energikvantum_2': 'Energiquantom Room 2',
 };
@@ -616,6 +636,7 @@ const hotspotLabelEn = {
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 VR/AR': 'VR/AR Room',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u0425\u0430\u0439-\u0422\u0435\u043a \u0446\u0435\u0445 2': 'High-Tech Workshop 2',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 IT-\u041a\u0432\u0430\u043d\u0442\u0443\u043c': 'IT-Quantum Room',
+  '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 IT-\u041a\u0432\u0430\u043d\u0442\u0443\u043c 2': 'IT-Quantum Room 2',
 };
 
 const variantLabelEn = {
