@@ -58,27 +58,6 @@ canvas:active {
   z-index: 0;
 }
 
-.liquid-glass::before,
-#variants button::before,
-#sidebar-btn::before,
-.setting-style-btn::before,
-#bg-load-btn::before,
-.sidebar-item::before {
-  content: '';
-  position: absolute;
-  inset: calc(-1 * var(--glass-border));
-  border-radius: inherit;
-  background: conic-gradient(from 0deg, transparent, rgba(255,255,255,0.10), rgba(255,255,255,0.22), rgba(255,255,255,0.10), transparent);
-  animation: liquidSpin 5s linear infinite;
-  z-index: -1;
-  pointer-events: none;
-  opacity: var(--glass-opacity);
-}
-
-@keyframes liquidSpin {
-  to { transform: rotate(360deg); }
-}
-
 /* ===== Intro Animation ===== */
 #intro {
   position: fixed;
