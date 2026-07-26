@@ -1264,6 +1264,7 @@ async function doCrossfadeTransition(targetId, returnYaw, returnPitch) {
   } catch (e) {
     renderer.domElement.style.filter = '';
     renderer.domElement.style.transition = '';
+    isTransitioning = false;
     console.error(e);
   }
 }
@@ -1774,7 +1775,30 @@ function buildSettingsPanel() {
     });
   });
 
-  // 14. Reset image adjustments
+  // 14. Darkness
+  addGroup('Темность', (g) => {
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.min = 0;
+    input.max = 100;
+    input.value = Math.round(settings.darkness * 100);
+    const val = document.createElement('span');
+    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
+    val.textContent = Math.round(settings.darkness * 100) + '%';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;align-items:center';
+    wrap.appendChild(input);
+    wrap.appendChild(val);
+    g.appendChild(wrap);
+    input.addEventListener('input', () => {
+      settings.darkness = parseInt(input.value) / 100;
+      val.textContent = input.value + '%';
+      saveSettings();
+      applyImageAdjustments();
+    });
+  });
+
+  // 15. Reset image adjustments
   const resetBtn = document.createElement('div');
   resetBtn.className = 'setting-style-btn';
   resetBtn.textContent = 'Сбросить настройки изображения';
@@ -1884,30 +1908,7 @@ function buildSettingsPanel() {
     });
   });
 
-  // 19. Darkness
-  addGroup('Темность', (g) => {
-    const input = document.createElement('input');
-    input.type = 'range';
-    input.min = 0;
-    input.max = 100;
-    input.value = Math.round(settings.darkness * 100);
-    const val = document.createElement('span');
-    val.style.cssText = 'color:#aaa;font-size:0.72rem;margin-left:6px;min-width:28px';
-    val.textContent = Math.round(settings.darkness * 100) + '%';
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'display:flex;align-items:center';
-    wrap.appendChild(input);
-    wrap.appendChild(val);
-    g.appendChild(wrap);
-    input.addEventListener('input', () => {
-      settings.darkness = parseInt(input.value) / 100;
-      val.textContent = input.value + '%';
-      saveSettings();
-      applyImageAdjustments();
-    });
-  });
-
-  // 20. Language selector
+  // 19. Language selector
   addGroup(t('language'), (g) => {
     const div = document.createElement('div');
     div.className = 'setting-style-options';
