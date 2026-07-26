@@ -314,6 +314,8 @@ const scenes = {
       { yaw: 3.199, pitch: -0.0628, label: 'Третий этаж 16', target: 'floor3_16',
         returnYaw: 0, returnPitch: 0 },
       { yaw: -0.698, pitch: -0.103, label: 'Третий этаж 1', target: 'floor3_1',
+        returnYaw: 0, returnPitch: 0 },
+      { yaw: 0.452, pitch: -0.122, label: 'Третий этаж', target: 'floor3',
         returnYaw: 0, returnPitch: 0 }
     ]
   },
@@ -384,8 +386,6 @@ const scenes = {
     ],
     hotspots: [
       { yaw: -4.409, pitch: -0.0489, label: 'Кабинет IT-Квантум', target: 'kabinet_itkvantum',
-        returnYaw: 0, returnPitch: 0 },
-      { yaw: -4.229, pitch: -0.0332, label: 'Третий этаж 17', target: 'floor3_17',
         returnYaw: 0, returnPitch: 0 }
     ]
   },
