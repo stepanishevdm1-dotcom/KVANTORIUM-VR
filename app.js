@@ -70,7 +70,9 @@ const scenes = {
       { yaw: 4.745, pitch: -0.084, label: 'Третий этаж', target: 'floor3',
         returnYaw: 1.543, returnPitch: 0 },
       { yaw: 1.429, pitch: -0.065, label: 'Третий этаж 2', target: 'floor3_2',
-        returnYaw: 4.744, returnPitch: 0 }
+        returnYaw: 4.744, returnPitch: 0 },
+      { yaw: 5.356, pitch: -0.108, label: 'Третий этаж 17', target: 'floor3_17',
+        returnYaw: 0, returnPitch: 0 }
     ]
   },
   'floor3_2': {
@@ -294,6 +296,18 @@ const scenes = {
     variants: [
       { label: 'Обычная', image: '3 этаж 16.jpg' }
     ],
+    hotspots: [
+      { yaw: 3.171, pitch: -0.0838, label: 'Третий этаж 15', target: 'floor3_15',
+        returnYaw: 0, returnPitch: 0 },
+      { yaw: 6.176, pitch: -0.0803, label: 'Третий этаж 17', target: 'floor3_17',
+        returnYaw: 0, returnPitch: 0 }
+    ]
+  },
+  'floor3_17': {
+    name: 'Третий этаж 17',
+    variants: [
+      { label: 'Обычная', image: '3 этаж 17.jpg' }
+    ],
     hotspots: []
   },
   'lektoriy': {
@@ -313,7 +327,12 @@ const scenes = {
     variants: [
       { label: 'Обычная', image: 'Кабинет VRAR.jpg' }
     ],
-    hotspots: []
+    hotspots: [
+      { yaw: 4.215, pitch: -0.0454, label: 'Кабинет Лекторий', target: 'lektoriy',
+        returnYaw: 0, returnPitch: 0 },
+      { yaw: 5.175, pitch: -0.0297, label: 'Третий этаж 14', target: 'floor3_14',
+        returnYaw: 0, returnPitch: 0 }
+    ]
   },
   'hightech': {
     name: 'Кабинет Хай-Тек цех',
@@ -384,7 +403,7 @@ const scenes = {
 
 const sidebarGroups = [
   { label: null, scenes: ['main_entrance', 'security'] },
-  { label: 'Третий этаж', scenes: ['floor3', 'floor3_1', 'floor3_2', 'floor3_3', 'floor3_4', 'floor3_5', 'floor3_6', 'floor3_7', 'floor3_8', 'floor3_9', 'floor3_10', 'floor3_11', 'floor3_12', 'floor3_13', 'floor3_14', 'floor3_15', 'floor3_16'] },
+  { label: 'Третий этаж', scenes: ['floor3', 'floor3_1', 'floor3_2', 'floor3_3', 'floor3_4', 'floor3_5', 'floor3_6', 'floor3_7', 'floor3_8', 'floor3_9', 'floor3_10', 'floor3_11', 'floor3_12', 'floor3_13', 'floor3_14', 'floor3_15', 'floor3_16', 'floor3_17'] },
   { label: 'Кабинеты', scenes: ['industrial_design', 'industrial_design_2', 'robo', 'kabinet_304', 'radio_station', 'energikvantum', 'energikvantum_2', 'chess_living', 'lektoriy', 'kabinet_vrar', 'hightech'] }
 ];
 
@@ -519,6 +538,7 @@ const sceneNamesEn = {
   'floor3_14': 'Floor 3 \u2014 14',
   'floor3_15': 'Floor 3 \u2014 15',
   'floor3_16': 'Floor 3 \u2014 16',
+  'floor3_17': 'Floor 3 \u2014 17',
   'chess_living': 'Chess Living Room',
   'industrial_design': 'Industrial Design Room',
   'industrial_design_2': 'Industrial Design Room 2',
@@ -565,6 +585,7 @@ const hotspotLabelEn = {
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u041b\u0435\u043a\u0442\u043e\u0440\u0438\u0439': 'Lecture Hall',
   '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 15': 'Floor 3 \u2014 15',
   '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 16': 'Floor 3 \u2014 16',
+  '\u0422\u0440\u0435\u0442\u0438\u0439 \u044d\u0442\u0430\u0436 17': 'Floor 3 \u2014 17',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 \u0425\u0430\u0439-\u0422\u0435\u043a \u0446\u0435\u0445': 'High-Tech Workshop',
   '\u041a\u0430\u0431\u0438\u043d\u0435\u0442 VR/AR': 'VR/AR Room',
 };
